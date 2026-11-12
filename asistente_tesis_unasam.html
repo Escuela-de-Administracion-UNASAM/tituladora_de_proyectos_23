@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Tesis - Administración UNASAM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Playfair Display & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            300: '#fde047',
+                            400: '#fbbf24',
+                            500: '#d4af37',
+                            600: '#b8860b',
+                            700: '#926707',
+                        },
+                        dark: {
+                            900: '#09090b',
+                            800: '#121215',
+                            700: '#1c1c21',
+                            600: '#27272a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Gold Scrollbar & Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121215;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b8860b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fff3c4 0%, #d4af37 50%, #926707 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-border-glow {
+            border: 1px solid #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+        .gold-button {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #000;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .gold-button:hover {
+            background: linear-gradient(135deg, #fde047 0%, #d4af37 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .matrix-table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt !important; color: black !important; }
+            .matrix-table th, .matrix-table td { border: 1px solid #000 !important; padding: 6px !important; color: black !important; background: transparent !important; }
+        }
+    </style>
+</head>
+<body class="bg-dark-900 text-gray-200 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-black">
+
+    <!-- HEADER INSTITUCIONAL -->
+    <header class="border-b border-gold-600/30 bg-dark-800/80 backdrop-blur-md sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 text-center md:text-left">
+                <div class="w-12 h-12 rounded-full border-2 border-gold-500 flex items-center justify-center bg-dark-900 shadow-md">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-gold-400"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif font-bold text-lg md:text-xl text-white tracking-wide">UNASAM - Escuela Profesional de Administración</h1>
+                    <p class="text-xs text-gold-400 font-medium">Asistente Inteligente de Proyectos de Tesis & Generador Metodológico</p>
+                </div>
+            </div>
+
+            <!-- TABS NAVIGATION -->
+            <nav class="flex space-x-1 sm:space-x-2 bg-dark-900 p-1.5 rounded-xl border border-gold-600/30">
+                <button id="tab-btn-1" onclick="switchTab(1)" class="tab-btn active px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 bg-gold-500 text-black shadow-md">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Formulación & Plan
+                </button>
+                <button id="tab-btn-2" onclick="switchTab(2)" class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-white transition-all flex items-center gap-2">
+                    <i data-lucide="table" class="w-4 h-4"></i> Matriz Consistencia
+                </button>
+                <button id="tab-btn-3" onclick="switchTab(3)" class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-400 hover:text-white transition-all flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4"></i> Operacionalización
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: FORMULACIÓN, VARIABLES Y ESTRUCTURA DE PLAN DE TESIS -->
+        <section id="tab-1" class="tab-content space-y-8">
+
+            <!-- CONFIGURACIÓN DE VARIABLES Y DATOS -->
+            <div class="bg-dark-800 rounded-2xl p-6 border border-gold-600/30 shadow-xl relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex items-center justify-between border-b border-gray-700/60 pb-4 mb-6">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-5 h-5 text-gold-400"></i>
+                        <h2 class="text-lg font-serif font-bold text-white">1. Configuración Metodológica y Datos del Proyecto</h2>
+                    </div>
+                    <span class="text-xs bg-gold-500/10 text-gold-400 px-3 py-1 rounded-full border border-gold-500/30">Normativa UNASAM</span>
+                </div>
+
+                <form id="thesisForm" class="space-y-6" onsubmit="event.preventDefault();">
+                    
+                    <!-- Fila Superior: Tipo de estudio y Conector -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Alcance / Tipo de Estudio</label>
+                            <select id="tipoEstudio" onchange="actualizarTodo()" class="w-full bg-dark-900 border border-gold-600/40 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-400">
+                                <option value="correlacional">Correlacional (Relación / Asociación)</option>
+                                <option value="explicativo">Explicativo / Causal (Influencia / Impacto)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Conector Inicial Variable 1 (Opcional)</label>
+                            <input type="text" id="prefixV1" oninput="actualizarTodo()" placeholder="Ej. El, La, Influencia del, Análisis de..." class="w-full bg-dark-900 border border-gold-600/40 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gold-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Conector de Enlace a V2</label>
+                            <input type="text" id="conectorV2" oninput="actualizarTodo()" placeholder="Auto (y / en / sobre)" class="w-full bg-dark-900 border border-gold-600/40 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gold-400">
+                        </div>
+                    </div>
+
+                    <!-- Variables 1 y 2 con sus Dimensiones -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <!-- VARIABLE 1 -->
+                        <div class="bg-dark-900/80 p-5 rounded-xl border border-gray-700/80 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="box" class="w-4 h-4"></i> Variable 1 (Independiente)
+                                </span>
+                            </div>
+                            <div>
+                                <input type="text" id="v1" oninput="actualizarTodo()" value="Marketing en redes sociales" placeholder="Nombre de la Variable 1" class="w-full bg-dark-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-gold-400">
+                            </div>
+
+                            <!-- Dimensiones V1 -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <label class="text-xs text-gray-400 font-medium">Dimensiones de V1</label>
+                                    <button type="button" onclick="addDim('v1')" class="text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar Dimensión
+                                    </button>
+                                </div>
+                                <div id="v1-dims-container" class="space-y-2">
+                                    <!-- Dinámico -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VARIABLE 2 -->
+                        <div class="bg-dark-900/80 p-5 rounded-xl border border-gray-700/80 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="box" class="w-4 h-4"></i> Variable 2 (Dependiente)
+                                </span>
+                            </div>
+                            <div>
+                                <input type="text" id="v2" oninput="actualizarTodo()" value="Decisión de compra de tours" placeholder="Nombre de la Variable 2" class="w-full bg-dark-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-gold-400">
+                            </div>
+
+                            <!-- Dimensiones V2 -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <label class="text-xs text-gray-400 font-medium">Dimensiones de V2</label>
+                                    <button type="button" onclick="addDim('v2')" class="text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar Dimensión
+                                    </button>
+                                </div>
+                                <div id="v2-dims-container" class="space-y-2">
+                                    <!-- Dinámico -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Datos Contextuales del Estudio -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Organización / Empresa</label>
+                            <input type="text" id="empresa" oninput="actualizarTodo()" value="Peru Diamonds" placeholder="Ej. Hotel Tumi / Peru Diamonds" class="w-full bg-dark-900 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-gold-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Población / Sujetos</label>
+                            <input type="text" id="poblacion" oninput="actualizarTodo()" value="Turistas" placeholder="Ej. Clientes, Colaboradores" class="w-full bg-dark-900 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-gold-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Lugar / Ciudad</label>
+                            <input type="text" id="lugar" oninput="actualizarTodo()" value="Huaraz" placeholder="Ej. Huaraz" class="w-full bg-dark-900 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-gold-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Año de Estudio</label>
+                            <input type="text" id="anio" oninput="actualizarTodo()" value="2026" placeholder="Ej. 2026" class="w-full bg-dark-900 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-gold-400">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- TÍTULO GENERADO RESALTADO -->
+            <div class="bg-gradient-to-r from-dark-800 via-dark-800 to-dark-700 rounded-2xl p-6 gold-border-glow relative">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-gold-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Título de Investigación Formulado (Sin Punto Final)
+                        </span>
+                        <h3 id="generatedTitleDisplay" class="text-xl md:text-2xl font-serif font-extrabold text-white leading-relaxed">
+                            --
+                        </h3>
+                    </div>
+                    <button onclick="copyToClipboard(document.getElementById('generatedTitleDisplay').innerText, 'Título')" class="gold-button px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 shrink-0 self-start md:self-center">
+                        <i data-lucide="copy" class="w-4 h-4"></i> Copiar Título
+                    </button>
+                </div>
+            </div>
+
+            <!-- ESTRUCTURA COMPLETA DEL PLAN DE TESIS UNASAM -->
+            <div class="bg-dark-800 rounded-2xl p-6 border border-gray-800 shadow-xl space-y-6">
+                <div class="flex items-center justify-between border-b border-gray-700/60 pb-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-gold-400"></i>
+                        <h2 class="text-lg font-serif font-bold text-white">Esquema Institucional del Proyecto de Tesis (UNASAM)</h2>
+                    </div>
+                    <button onclick="copyToClipboard(document.getElementById('planContentArea').innerText, 'Esquema de Tesis')" class="text-xs bg-dark-900 hover:bg-dark-700 text-gold-400 border border-gold-600/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Esquema
+                    </button>
+                </div>
+
+                <div id="planContentArea" class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
+
+                    <!-- SECCIÓN 2.1 -->
+                    <div class="space-y-3 bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                        <h3 class="font-bold text-gold-400 font-serif text-base">2.1. PLANTEAMIENTO DEL PROBLEMA</h3>
+                        
+                        <div class="pl-4 space-y-2">
+                            <h4 class="font-semibold text-white">2.1.1. Descripción o Definición del Problema</h4>
+                            <p id="descProblemaText" class="text-gray-400 text-xs sm:text-sm">
+                                En el contexto actual de las organizaciones en <span class="text-gold-400">[Lugar]</span>, la gestión estratégica exige optimizar variables clave como <span class="text-gold-400">[V1]</span> y <span class="text-gold-400">[V2]</span>. En la entidad <span class="text-gold-400">[Empresa]</span>, se observa la necesidad de diagnosticar la relación y comportamiento de estas variables en los <span class="text-gold-400">[Población]</span> para sustentar la toma de decisiones gerenciales durante el año <span class="text-gold-400">[Año]</span>.
+                            </p>
+
+                            <h4 class="font-semibold text-white pt-2">2.1.2. Formulación del Problema</h4>
+                            
+                            <div class="pl-4 space-y-2">
+                                <div>
+                                    <span class="font-bold text-gold-500">2.1.2.1. Problema General:</span>
+                                    <p id="pgDisplay" class="font-medium text-white italic mt-1 bg-dark-800 p-2.5 rounded-lg border border-gray-800"></p>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-gold-500">2.1.2.2. Problemas Específicos:</span>
+                                    <ul id="peDisplay" class="list-disc pl-5 space-y-1.5 text-gray-300 mt-1"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2.2 -->
+                    <div class="space-y-2 bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                        <h3 class="font-bold text-gold-400 font-serif text-base">2.2. JUSTIFICACIÓN</h3>
+                        <p class="text-xs sm:text-sm text-gray-300">
+                            La presente investigación se justifica a nivel teórico al enriquecer el cuerpo conceptual de la administración sobre <span class="text-gold-400" id="justV1">V1</span> y <span class="text-gold-400" id="justV2">V2</span>. Prácticamente, brindará herramientas de decisión para la gerencia de <span class="text-gold-400" id="justEmp">Empresa</span>. Metodológicamente, proveerá un instrumento válido y confiable para evaluar a los <span class="text-gold-400" id="justPob">Población</span>.
+                        </p>
+                    </div>
+
+                    <!-- SECCIÓN 2.3 -->
+                    <div class="space-y-2 bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                        <h3 class="font-bold text-gold-400 font-serif text-base">2.3. MARCO TEÓRICO</h3>
+                        <div class="pl-4 space-y-1.5 text-xs sm:text-sm">
+                            <p><strong class="text-white">2.3.1. Antecedentes de la Investigación:</strong> Investigaciones nacionales e internacionales vinculadas a <span class="text-gold-400" id="mtV1">V1</span> y <span class="text-gold-400" id="mtV2">V2</span>.</p>
+                            <p><strong class="text-white">2.3.2. Bases teóricas:</strong> Teorías del comportamiento organizacional, marketing y administración aplicadas.</p>
+                            <p><strong class="text-white">2.3.3. Definición de términos básicos:</strong> Conceptos operativos de las variables y dimensiones analizadas.</p>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2.4 -->
+                    <div class="space-y-3 bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                        <h3 class="font-bold text-gold-400 font-serif text-base">2.4. HIPÓTESIS Y OPERACIONALIZACIÓN DE VARIABLES</h3>
+                        <div class="pl-4 space-y-2">
+                            <div>
+                                <span class="font-bold text-gold-500">2.4.1. Hipótesis General:</span>
+                                <p id="hgDisplay" class="font-medium text-white italic mt-1 bg-dark-800 p-2.5 rounded-lg border border-gray-800"></p>
+                            </div>
+                            <div>
+                                <span class="font-bold text-gold-500">2.4.2. Hipótesis Específicas:</span>
+                                <ul id="heDisplay" class="list-disc pl-5 space-y-1.5 text-gray-300 mt-1"></ul>
+                            </div>
+                            <p class="text-xs text-gray-400 pt-1"><strong class="text-white">2.4.3 y 2.4.4:</strong> Ver detalle completo en la pestaña 3 (Matriz de Operacionalización).</p>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2.5 -->
+                    <div class="space-y-3 bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                        <h3 class="font-bold text-gold-400 font-serif text-base">2.5. OBJETIVOS</h3>
+                        <div class="pl-4 space-y-2">
+                            <div>
+                                <span class="font-bold text-gold-500">2.5.1. Objetivo General:</span>
+                                <p id="ogDisplay" class="font-medium text-white italic mt-1 bg-dark-800 p-2.5 rounded-lg border border-gray-800"></p>
+                            </div>
+                            <div>
+                                <span class="font-bold text-gold-500">2.5.2. Objetivos Específicos:</span>
+                                <ul id="oeDisplay" class="list-disc pl-5 space-y-1.5 text-gray-300 mt-1"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 3 -->
+                    <div class="space-y-2 bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                        <h3 class="font-bold text-gold-400 font-serif text-base">3. ASPECTO METODOLÓGICO</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm pl-4">
+                            <p><strong class="text-white">3.1. Tipo de Estudio:</strong> Cuantitativo, Nivel <span class="text-gold-400" id="metTipo">Correlacional</span></p>
+                            <p><strong class="text-white">3.2. Diseño:</strong> No experimental, transversal</p>
+                            <p><strong class="text-white">3.3. Población:</strong> <span class="text-gold-400" id="metPob">Turistas</span> de la entidad</p>
+                            <p><strong class="text-white">3.4. Muestra:</strong> Probabilística / Muestreo aleatorio simple</p>
+                            <p><strong class="text-white">3.5. Técnicas e Instrumentos:</strong> Encuesta / Cuestionario estructurado (Escala Likert 1-5)</p>
+                            <p><strong class="text-white">3.6. Análisis Estadístico:</strong> Prueba de correlación (Pearson/Spearman) mediante SPSS</p>
+                            <p><strong class="text-white">3.7. Ética:</strong> Criterios de confidencialidad, consentimiento informado y rigor científico</p>
+                            <p><strong class="text-white">3.8. Matriz de Consistencia:</strong> (Ver pestaña dedicada)</p>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 4 & 5 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                            <h3 class="font-bold text-gold-400 font-serif text-base mb-2">4. ASPECTO TÉCNICO ADMINISTRATIVO</h3>
+                            <ul class="text-xs space-y-1 text-gray-300">
+                                <li>• 4.1. Cronograma de Trabajo (Gantt - 6 meses)</li>
+                                <li>• 4.2. Presupuesto autofinanciado</li>
+                                <li>• 4.3. Financiamiento con recursos propios</li>
+                            </ul>
+                        </div>
+                        <div class="bg-dark-900/60 p-4 rounded-xl border border-gray-800">
+                            <h3 class="font-bold text-gold-400 font-serif text-base mb-2">5. REFERENCIAS BIBLIOGRÁFICAS</h3>
+                            <p class="text-xs text-gray-300">Redacción y citado en formato Estándar APA 7ma Edición institucional.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TAB 2: MATRIZ DE CONSISTENCIA -->
+        <section id="tab-2" class="tab-content hidden space-y-6">
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-dark-800 p-6 rounded-2xl border border-gold-600/30">
+                <div>
+                    <h2 class="text-xl font-serif font-bold text-white">APÉNDICE 1: MATRIZ DE CONSISTENCIA</h2>
+                    <p class="text-xs text-gold-400">Escuela Profesional de Administración - UNASAM</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="bg-dark-900 hover:bg-dark-700 text-white border border-gray-700 px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="printer" class="w-4 h-4 text-gold-400"></i> Imprimir Matriz
+                    </button>
+                    <button onclick="copyTableToClipboard('matrixTable')" class="gold-button px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
+                        <i data-lucide="copy" class="w-4 h-4"></i> Copiar Tabla
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLA MATRIZ DE CONSISTENCIA -->
+            <div class="bg-dark-800 rounded-2xl p-4 sm:p-6 border border-gray-800 shadow-xl overflow-x-auto">
+                
+                <div class="mb-4 text-center">
+                    <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider">Título del Proyecto:</h3>
+                    <p id="matrixTitleHeader" class="text-base font-serif font-bold text-gold-400 mt-1"></p>
+                </div>
+
+                <table id="matrixTable" class="matrix-table w-full text-left text-xs text-gray-200 border-collapse border border-gray-700">
+                    <thead>
+                        <tr class="bg-dark-900 text-gold-400 border-b border-gray-700">
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">PROBLEMAS</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">OBJETIVOS</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">HIPÓTESIS</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">VARIABLES Y DIMENSIONES</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">METODOLOGÍA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrixTableBody" class="divide-y divide-gray-800">
+                        <!-- Generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <!-- TAB 3: MATRIZ DE OPERACIONALIZACIÓN DE VARIABLES -->
+        <section id="tab-3" class="tab-content hidden space-y-6">
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-dark-800 p-6 rounded-2xl border border-gold-600/30">
+                <div>
+                    <h2 class="text-xl font-serif font-bold text-white">APÉNDICE 2: OPERACIONALIZACIÓN DE VARIABLES</h2>
+                    <p class="text-xs text-gold-400">Escuela Profesional de Administración - UNASAM</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="bg-dark-900 hover:bg-dark-700 text-white border border-gray-700 px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="printer" class="w-4 h-4 text-gold-400"></i> Imprimir Matriz
+                    </button>
+                    <button onclick="copyTableToClipboard('operTable')" class="gold-button px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
+                        <i data-lucide="copy" class="w-4 h-4"></i> Copiar Tabla
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLA OPERACIONALIZACIÓN -->
+            <div class="bg-dark-800 rounded-2xl p-4 sm:p-6 border border-gray-800 shadow-xl overflow-x-auto">
+                
+                <table id="operTable" class="matrix-table w-full text-left text-xs text-gray-200 border-collapse border border-gray-700">
+                    <thead>
+                        <tr class="bg-dark-900 text-gold-400 border-b border-gray-700">
+                            <th class="p-3 border border-gray-700 w-1/6 font-bold uppercase tracking-wider">Variable</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">Definición Conceptual</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">Definición Operacional</th>
+                            <th class="p-3 border border-gray-700 w-1/6 font-bold uppercase tracking-wider">Dimensiones</th>
+                            <th class="p-3 border border-gray-700 w-1/5 font-bold uppercase tracking-wider">Indicadores</th>
+                            <th class="p-3 border border-gray-700 w-12 text-center font-bold uppercase tracking-wider">Ítems</th>
+                            <th class="p-3 border border-gray-700 w-24 text-center font-bold uppercase tracking-wider">Escala</th>
+                        </tr>
+                    </thead>
+                    <tbody id="operTableBody" class="divide-y divide-gray-800">
+                        <!-- Generado dinámicamente por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER INSTITUCIONAL -->
+    <footer class="border-t border-gray-800 bg-dark-900 py-6 mt-12 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 space-y-2">
+            <p class="font-medium text-gray-400">Universidad Nacional Santiago Antúnez de Mayolo - Facultad de Economía y Contabilidad / Administración</p>
+            <p>© 2026 Asistente de Proyectos de Tesis. Todos los parámetros respetan el reglamento de grados y títulos de la EPA-UNASAM.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Estado inicial de dimensiones e indicadores
+        let state = {
+            v1Dims: [
+                { name: "Publicidad digital", indicators: ["Frecuencia de anuncios", "Alcance de contenido"] },
+                { name: "Interacción en redes", indicators: ["Respuestas a comentarios", "Atención al cliente"] },
+                { name: "Promociones exclusivas", indicators: ["Cupones virtuales", "Ofertas de temporada"] }
+            ],
+            v2Dims: [
+                { name: "Intensidad de compra", indicators: ["Frecuencia de reserva", "Monto gastado"] },
+                { name: "Experiencia del cliente", indicators: ["Satisfacción del tour", "Recomendación activa"] }
+            ]
+        };
+
+        // Inicializar la app al cargar
+        window.onload = function() {
+            lucide.createIcons();
+            renderDimsInputs();
+            actualizarTodo();
+        };
+
+        // Cambiar pestañas
+        function switchTab(tabNum) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-gold-500', 'text-black', 'shadow-md');
+                el.classList.add('text-gray-400');
+            });
+
+            document.getElementById(`tab-${tabNum}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabNum}`);
+            activeBtn.classList.remove('text-gray-400');
+            activeBtn.classList.add('bg-gold-500', 'text-black', 'shadow-md');
+        }
+
+        // Renderizar inputs de dimensiones dinámicas
+        function renderDimsInputs() {
+            const containerV1 = document.getElementById('v1-dims-container');
+            const containerV2 = document.getElementById('v2-dims-container');
+
+            containerV1.innerHTML = state.v1Dims.map((d, i) => `
+                <div class="bg-dark-800 p-3 rounded-lg border border-gray-700/60 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-gold-500">D${i+1}:</span>
+                        <input type="text" value="${d.name}" oninput="updateDimName('v1', ${i}, this.value)" placeholder="Nombre dimensión" class="flex-grow bg-dark-900 border border-gray-700 rounded-md px-2.5 py-1 text-xs text-white focus:outline-none focus:border-gold-400">
+                        ${state.v1Dims.length > 1 ? `<button type="button" onclick="removeDim('v1', ${i})" class="text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                    </div>
+                    <div>
+                        <input type="text" value="${d.indicators.join(', ')}" oninput="updateDimIndicators('v1', ${i}, this.value)" placeholder="Indicadores (separados por coma)" class="w-full bg-dark-900 border border-gray-800 rounded-md px-2.5 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-gold-400">
+                    </div>
+                </div>
+            `).join('');
+
+            containerV2.innerHTML = state.v2Dims.map((d, i) => `
+                <div class="bg-dark-800 p-3 rounded-lg border border-gray-700/60 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-gold-500">D${i+1}:</span>
+                        <input type="text" value="${d.name}" oninput="updateDimName('v2', ${i}, this.value)" placeholder="Nombre dimensión" class="flex-grow bg-dark-900 border border-gray-700 rounded-md px-2.5 py-1 text-xs text-white focus:outline-none focus:border-gold-400">
+                        ${state.v2Dims.length > 1 ? `<button type="button" onclick="removeDim('v2', ${i})" class="text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                    </div>
+                    <div>
+                        <input type="text" value="${d.indicators.join(', ')}" oninput="updateDimIndicators('v2', ${i}, this.value)" placeholder="Indicadores (separados por coma)" class="w-full bg-dark-900 border border-gray-800 rounded-md px-2.5 py-1 text-[11px] text-gray-300 focus:outline-none focus:border-gold-400">
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function addDim(varKey) {
+            if (varKey === 'v1') {
+                state.v1Dims.push({ name: `Nueva Dimensión ${state.v1Dims.length + 1}`, indicators: ["Indicador 1", "Indicador 2"] });
+            } else {
+                state.v2Dims.push({ name: `Nueva Dimensión ${state.v2Dims.length + 1}`, indicators: ["Indicador 1", "Indicador 2"] });
+            }
+            renderDimsInputs();
+            actualizarTodo();
+        }
+
+        function removeDim(varKey, index) {
+            if (varKey === 'v1') state.v1Dims.splice(index, 1);
+            else state.v2Dims.splice(index, 1);
+            renderDimsInputs();
+            actualizarTodo();
+        }
+
+        function updateDimName(varKey, index, val) {
+            if (varKey === 'v1') state.v1Dims[index].name = val;
+            else state.v2Dims[index].name = val;
+            actualizarTodo();
+        }
+
+        function updateDimIndicators(varKey, index, val) {
+            const arr = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            if (varKey === 'v1') state.v1Dims[index].indicators = arr;
+            else state.v2Dims[index].indicators = arr;
+            actualizarTodo();
+        }
+
+        // LÓGICA DE GENERACIÓN INTEGRAL Y CONECTORES INTELIGENTES
+        function actualizarTodo() {
+            const tipo = document.getElementById('tipoEstudio').value;
+            const prefixV1 = document.getElementById('prefixV1').value.trim();
+            const conectorV2Input = document.getElementById('conectorV2').value.trim();
+            const v1 = document.getElementById('v1').value.trim();
+            const v2 = document.getElementById('v2').value.trim();
+            const empresa = document.getElementById('empresa').value.trim();
+            const poblacion = document.getElementById('poblacion').value.trim();
+            const lugar = document.getElementById('lugar').value.trim();
+            const anio = document.getElementById('anio').value.trim();
+
+            // 1. GENERACIÓN DEL TÍTULO DE INVESTIGACIÓN (ESTRICTO SIN PUNTO FINAL)
+            let tituloStr = "";
+            let enlaceV2 = conectorV2Input || (tipo === 'correlacional' ? 'y' : 'en');
+
+            if (prefixV1) {
+                tituloStr += prefixV1 + " ";
+            }
+
+            if (v1 && v2) {
+                if (prefixV1) {
+                    tituloStr += `${v1.toLowerCase()} ${enlaceV2} ${v2.toLowerCase()}`;
+                } else {
+                    if (tipo === 'correlacional') {
+                        tituloStr += `Relación entre ${v1.toLowerCase()} y ${v2.toLowerCase()}`;
+                    } else {
+                        tituloStr += `Influencia del ${v1.toLowerCase()} en la ${v2.toLowerCase()}`;
+                    }
+                }
+            } else {
+                tituloStr += v1 || v2;
+            }
+
+            if (poblacion && empresa) {
+                tituloStr += ` en los ${poblacion.toLowerCase()} de la empresa ${empresa}`;
+            } else if (poblacion) {
+                tituloStr += ` en los ${poblacion.toLowerCase()}`;
+            } else if (empresa) {
+                tituloStr += ` en la empresa ${empresa}`;
+            }
+
+            if (lugar) {
+                const lLower = lugar.toLowerCase();
+                if (lLower.startsWith("en ") || lLower.startsWith("de ")) {
+                    tituloStr += ` ${lugar}`;
+                } else {
+                    tituloStr += `, ${lugar}`;
+                }
+            }
+
+            if (anio) {
+                tituloStr += `, ${anio}`;
+            }
+
+            // Limpieza estricta de puntos finales
+            tituloStr = tituloStr.replace(/[.,;:\s]+$/, '');
+            if (tituloStr.length > 0) {
+                tituloStr = tituloStr.charAt(0).toUpperCase() + tituloStr.slice(1);
+            } else {
+                tituloStr = "Complete los campos para construir el título...";
+            }
+
+            document.getElementById('generatedTitleDisplay').textContent = tituloStr;
+            document.getElementById('matrixTitleHeader').textContent = tituloStr;
+
+            // 2. PROBLEMAS, OBJETIVOS E HIPÓTESIS
+            let pg = "", og = "", hg = "";
+            let pes = [], oes = [], hes = [];
+
+            if (tipo === 'correlacional') {
+                pg = `¿De qué manera se relaciona ${v1.toLowerCase()} con ${v2.toLowerCase()} en ${poblacion.toLowerCase()} de la empresa ${empresa}, ${lugar}, ${anio}?`;
+                og = `Determinar la relación entre ${v1.toLowerCase()} y ${v2.toLowerCase()} en ${poblacion.toLowerCase()} de la empresa ${empresa}, ${lugar}, ${anio}.`;
+                hg = `Existe una relación directa y significativa entre ${v1.toLowerCase()} y ${v2.toLowerCase()} en ${poblacion.toLowerCase()} de la empresa ${empresa}, ${lugar}, ${anio}.`;
+
+                state.v1Dims.forEach((dim, idx) => {
+                    pes.push(`PE${idx+1}: ¿De qué manera la dimensión ${dim.name.toLowerCase()} se relaciona con ${v2.toLowerCase()}?`);
+                    oes.push(`OE${idx+1}: Determinar la relación de la dimensión ${dim.name.toLowerCase()} con ${v2.toLowerCase()}.`);
+                    hes.push(`HE${idx+1}: La dimensión ${dim.name.toLowerCase()} se relaciona significativamente con ${v2.toLowerCase()}.`);
+                });
+            } else {
+                pg = `¿En qué medida el ${v1.toLowerCase()} influye en ${v2.toLowerCase()} en ${poblacion.toLowerCase()} de la empresa ${empresa}, ${lugar}, ${anio}?`;
+                og = `Determinar el grado de influencia del ${v1.toLowerCase()} en ${v2.toLowerCase()} en ${poblacion.toLowerCase()} de la empresa ${empresa}, ${lugar}, ${anio}.`;
+                hg = `El ${v1.toLowerCase()} influye de manera significativa en ${v2.toLowerCase()} en ${poblacion.toLowerCase()} de la empresa ${empresa}, ${lugar}, ${anio}.`;
+
+                state.v1Dims.forEach((dim, idx) => {
+                    pes.push(`PE${idx+1}: ¿En qué medida la dimensión ${dim.name.toLowerCase()} influye en ${v2.toLowerCase()}?`);
+                    oes.push(`OE${idx+1}: Evaluar el impacto de la dimensión ${dim.name.toLowerCase()} en ${v2.toLowerCase()}.`);
+                    hes.push(`HE${idx+1}: La dimensión ${dim.name.toLowerCase()} influye significativamente en ${v2.toLowerCase()}.`);
+                });
+            }
+
+            // Actualizar vista Tab 1
+            document.getElementById('pgDisplay').textContent = pg;
+            document.getElementById('ogDisplay').textContent = og;
+            document.getElementById('hgDisplay').textContent = hg;
+
+            document.getElementById('peDisplay').innerHTML = pes.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('oeDisplay').innerHTML = oes.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('heDisplay').innerHTML = hes.map(item => `<li>${item}</li>`).join('');
+
+            // Campos contextuales en texto
+            document.getElementById('justV1').textContent = v1;
+            document.getElementById('justV2').textContent = v2;
+            document.getElementById('justEmp').textContent = empresa;
+            document.getElementById('justPob').textContent = poblacion;
+
+            document.getElementById('mtV1').textContent = v1;
+            document.getElementById('mtV2').textContent = v2;
+
+            document.getElementById('metTipo').textContent = tipo === 'correlacional' ? 'Correlacional' : 'Explicativo / Causal';
+            document.getElementById('metPob').textContent = poblacion;
+
+            // 3. GENERAR TABLA DE MATRIZ DE CONSISTENCIA (TAB 2)
+            renderMatrixTable(pg, og, hg, pes, oes, hes, v1, v2, tipo, poblacion, empresa);
+
+            // 4. GENERAR TABLA DE OPERACIONALIZACIÓN (TAB 3)
+            renderOperTable(v1, v2);
+        }
+
+        // RENDER MATRIZ DE CONSISTENCIA
+        function renderMatrixTable(pg, og, hg, pes, oes, hes, v1, v2, tipo, poblacion, empresa) {
+            const tbody = document.getElementById('matrixTableBody');
+
+            let v1DimsText = state.v1Dims.map((d, i) => `D${i+1}: ${d.name}`).join('<br>');
+            let v2DimsText = state.v2Dims.map((d, i) => `D${i+1}: ${d.name}`).join('<br>');
+
+            let html = `
+                <tr class="bg-dark-900/40">
+                    <td class="p-3 border border-gray-700 align-top">
+                        <strong class="text-gold-400 block mb-1">Problema General</strong>
+                        ${pg}
+                    </td>
+                    <td class="p-3 border border-gray-700 align-top">
+                        <strong class="text-gold-400 block mb-1">Objetivo General</strong>
+                        ${og}
+                    </td>
+                    <td class="p-3 border border-gray-700 align-top">
+                        <strong class="text-gold-400 block mb-1">Hipótesis General</strong>
+                        ${hg}
+                    </td>
+                    <td class="p-3 border border-gray-700 align-top">
+                        <strong class="text-gold-400 block mb-1">V1: ${v1} (Independiente)</strong>
+                        <div class="text-[11px] text-gray-400 mt-1">${v1DimsText}</div>
+                        <strong class="text-gold-400 block mb-1 mt-3">V2: ${v2} (Dependiente)</strong>
+                        <div class="text-[11px] text-gray-400 mt-1">${v2DimsText}</div>
+                    </td>
+                    <td class="p-3 border border-gray-700 align-top leading-relaxed text-[11px]">
+                        <strong>Enfoque:</strong> Cuantitativo<br>
+                        <strong>Nivel:</strong> ${tipo === 'correlacional' ? 'Correlacional' : 'Explicativo / Causal'}<br>
+                        <strong>Diseño:</strong> No experimental, transversal<br>
+                        <strong>Población:</strong> ${poblacion} de ${empresa}<br>
+                        <strong>Técnica:</strong> Encuesta<br>
+                        <strong>Instrumento:</strong> Cuestionario en Escala Likert (1 al 5)<br>
+                        <strong>Análisis:</strong> SPSS (Prueba de hipótesis)
+                    </td>
+                </tr>
+            `;
+
+            // Filas Específicas
+            for (let i = 0; i < pes.length; i++) {
+                html += `
+                    <tr>
+                        <td class="p-3 border border-gray-700 align-top"><strong>${pes[i].split(':')[0]}:</strong> ${pes[i].split(':')[1]}</td>
+                        <td class="p-3 border border-gray-700 align-top"><strong>${oes[i].split(':')[0]}:</strong> ${oes[i].split(':')[1]}</td>
+                        <td class="p-3 border border-gray-700 align-top"><strong>${hes[i].split(':')[0]}:</strong> ${hes[i].split(':')[1]}</td>
+                        <td class="p-3 border border-gray-700 align-top">
+                            <span class="text-gold-400 font-semibold">Dimensión evaluada:</span><br>
+                            D${i+1}: ${state.v1Dims[i] ? state.v1Dims[i].name : ''}
+                        </td>
+                        <td class="p-3 border border-gray-700 align-top text-[11px] text-gray-400">
+                            Ítems correspondientes en el instrumento de recolección de datos.
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        // RENDER OPERACIONALIZACIÓN DE VARIABLES
+        function renderOperTable(v1, v2) {
+            const tbody = document.getElementById('operTableBody');
+            let html = "";
+            let itemCounter = 1;
+
+            // Bloque Variable 1
+            const v1RowsCount = state.v1Dims.length;
+            state.v1Dims.forEach((d, idx) => {
+                const itemStart = itemCounter;
+                const itemEnd = itemCounter + (d.indicators.length * 2) - 1;
+                itemCounter = itemEnd + 1;
+
+                html += `
+                    <tr>
+                        ${idx === 0 ? `
+                            <td rowspan="${v1RowsCount}" class="p-3 border border-gray-700 font-bold text-gold-400 align-top">
+                                V1: ${v1}<br><span class="text-[10px] text-gray-400 font-normal">(Variable Independiente)</span>
+                            </td>
+                            <td rowspan="${v1RowsCount}" class="p-3 border border-gray-700 align-top text-gray-300">
+                                Conjunto de factores, estrategias y procesos clave que constituyen el desarrollo operativo de ${v1.toLowerCase()}.
+                            </td>
+                            <td rowspan="${v1RowsCount}" class="p-3 border border-gray-700 align-top text-gray-300">
+                                Medido mediante cuestionario estructurado de ${itemCounter - 1} ítems en escala ordinal de Likert (1-5).
+                            </td>
+                        ` : ''}
+                        <td class="p-3 border border-gray-700 font-semibold text-white align-top">
+                            D${idx+1}. ${d.name}
+                        </td>
+                        <td class="p-3 border border-gray-700 align-top">
+                            <ul class="list-disc pl-4 space-y-1">
+                                ${d.indicators.map(ind => `<li>${ind}</li>`).join('')}
+                            </ul>
+                        </td>
+                        <td class="p-3 border border-gray-700 text-center font-mono align-top text-gold-400">
+                            P${itemStart} - P${itemEnd}
+                        </td>
+                        ${idx === 0 ? `
+                            <td rowspan="${v1RowsCount}" class="p-3 border border-gray-700 text-center align-top text-gray-300">
+                                Ordinal<br>(Likert 1-5)
+                            </td>
+                        ` : ''}
+                    </tr>
+                `;
+            });
+
+            // Bloque Variable 2
+            const v2RowsCount = state.v2Dims.length;
+            const v2StartItem = itemCounter;
+            state.v2Dims.forEach((d, idx) => {
+                const itemStart = itemCounter;
+                const itemEnd = itemCounter + (d.indicators.length * 2) - 1;
+                itemCounter = itemEnd + 1;
+
+                html += `
+                    <tr class="bg-dark-900/30">
+                        ${idx === 0 ? `
+                            <td rowspan="${v2RowsCount}" class="p-3 border border-gray-700 font-bold text-gold-400 align-top">
+                                V2: ${v2}<br><span class="text-[10px] text-gray-400 font-normal">(Variable Dependiente)</span>
+                            </td>
+                            <td rowspan="${v2RowsCount}" class="p-3 border border-gray-700 align-top text-gray-300">
+                                Manifestaciones, efectos o respuestas alcanzadas en el contexto organizacional respecto a ${v2.toLowerCase()}.
+                            </td>
+                            <td rowspan="${v2RowsCount}" class="p-3 border border-gray-700 align-top text-gray-300">
+                                Evaluado a través del instrumento de medición con respuestas graduadas del 1 al 5.
+                            </td>
+                        ` : ''}
+                        <td class="p-3 border border-gray-700 font-semibold text-white align-top">
+                            D${idx+1}. ${d.name}
+                        </td>
+                        <td class="p-3 border border-gray-700 align-top">
+                            <ul class="list-disc pl-4 space-y-1">
+                                ${d.indicators.map(ind => `<li>${ind}</li>`).join('')}
+                            </ul>
+                        </td>
+                        <td class="p-3 border border-gray-700 text-center font-mono align-top text-gold-400">
+                            P${itemStart} - P${itemEnd}
+                        </td>
+                        ${idx === 0 ? `
+                            <td rowspan="${v2RowsCount}" class="p-3 border border-gray-700 text-center align-top text-gray-300">
+                                Ordinal<br>(Likert 1-5)
+                            </td>
+                        ` : ''}
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // UTILIDAD DE COPIAR AL PORTAPAPELES
+        function copyToClipboard(text, label) {
+            if (!text) return;
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = text;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+            alert(`¡${label} copiado exitosamente al portapapeles!`);
+        }
+
+        // COPIAR TABLA COMPLETA
+        function copyTableToClipboard(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const range = document.createRange();
+            range.selectNode(table);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();
+            alert("¡Tabla copiada al portapapeles! Puedes pegarla directamente en Microsoft Word o Excel.");
+        }
+    </script>
+</body>
+</html>
